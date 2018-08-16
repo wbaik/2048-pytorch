@@ -158,9 +158,14 @@ class GameGrid(Frame):
             return max(epsilon, self.min_epsilon)
 
         def adjust_reward(r):
-            reward = np.log2(r) / 10.0
+            reward = np.array(r)
             reward = reward[np.newaxis, ...]
             return torch.from_numpy(reward).float().clamp(0.0).to(device)
+
+        def new_largest_number(max_so_far):
+            new_max = np.max(self.matrix).item()
+            return (1.0, new_max) if new_max > max_so_far else (0.0, max_so_far)
+
 
         max_all = 0.0
         max_reward_avg = 0.0
@@ -169,13 +174,17 @@ class GameGrid(Frame):
 
         for i_episode in range(self.n_train + 1):
 
+            max_tile_in_this_episode = 0.0
+
             for t in count(1):
                 epsilon = adjust_epsilon(epsilon)
 
                 # Compute State, Action, Reward ...
                 state = get_state(self.matrix)
                 action = epsilon_greedy_action(state, epsilon)
-                done, reward_ = self.key_down(KEY_CHOICES[action])
+                done, _ = self.key_down(KEY_CHOICES[action])
+
+                reward_, max_tile_in_this_episode = new_largest_number(max_tile_in_this_episode)
 
                 reward = adjust_reward(reward_)
                 action = torch.tensor([action], device=device, dtype=torch.long)

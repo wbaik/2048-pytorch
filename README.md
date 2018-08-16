@@ -2,7 +2,7 @@
 
 Implementing [Deep Q-Network](https://deepmind.com/research/dqn/) with `PyTorch` to solve 2048. 
 
-#### Requirements:
+#### Requirements
 `NVIDIA GPU` and `CUDA`, of course...  and `PyTorch`, along with some others in `requirements.txt`
 
 
@@ -12,10 +12,26 @@ Implementing [Deep Q-Network](https://deepmind.com/research/dqn/) with `PyTorch`
 and I am using an [implemented version of Python](https://github.com/yangshun/2048-python) by [Tay Yang Shun](http://github.com/yangshun)
 and [Emmanuel Goh](http://github.com/emman27).
 
-To start the training, which takes horribly long to get to an expert level, run the following:
+To start the training, run the following:
     
     $ python3 train_dqn.py
 
 ![screenshot](img/2048.gif)
 
+
+#### Result
+
+After some training (of more than 6 hours with NVIDIA 1060), 
+I have seen its performance getting better than complete random moves, on average.
+However, the idea of `Q-learning` assumes that its search space will be visited,
+like in the case of `Monte Carlo Search`, with later revisit it to revise its value.
+
+The current model has a weakness. The original scoring system in the game 
+makes the agent unable to learn the essence of optimal move. With the regular scoring system,
+it does not (probabilistically speaking) see the value in `corners`.
+ 
+A solution to make the training go faster is to change the score system for the agent.
+But this is not applicable to other games.
+Another solution is to have a ridiculous amount of training hours... And hope it sees the
+value in the corners.
 
