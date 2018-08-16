@@ -12,19 +12,14 @@ import torch
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 file_handler = logging.FileHandler('progress.log')
-file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(formatter)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
-stream_handler.setFormatter(formatter)
-
 logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
 
 
 SIZE = 500
@@ -55,7 +50,7 @@ KEY_CHOICES = (KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT)
 
 class GameGrid(Frame):
     def __init__(self, replay_memory, policy, target, optimizer,
-                 epsilon=1.0, min_epsilon=0.2, eps_decay_rate=1e-5, update_every=40, n_train=1000,
+                 epsilon=1.0, min_epsilon=0.2, eps_decay_rate=1e-6, update_every=40, n_train=3000,
                  batch_size=1024, gamma=0.999):
         Frame.__init__(self)
 
@@ -216,11 +211,14 @@ class GameGrid(Frame):
 
             if i_episode % self.update_every == 0:
                 self.target.load_state_dict(self.policy.state_dict())
-                logger.info('Ending {} episode '.format(i_episode))
-                logger.info('Max Tile Avg: {} '.format(max_reward_avg / self.update_every))
-                logger.info('Max Tile: {} '.format(max_all))
+                logger.info('----------------------------------------------------')
+                logger.info('Ending {} episode, epsilon  : {:.5f}'.format(i_episode, epsilon))
+                logger.info('Max Tile Avg in {}th update : {} '.format(int(i_episode/self.update_every),
+                                                                           max_reward_avg / self.update_every))
+                logger.info('Max Tile Found              : {} '.format(max_all))
 
                 max_reward_avg = 0.0
+                max_all = 0.0
 
         self.quit()
 

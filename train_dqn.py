@@ -1,3 +1,4 @@
+import puzzle
 from puzzle import GameGrid
 
 import torch
