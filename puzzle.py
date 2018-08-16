@@ -15,12 +15,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 file_handler = logging.FileHandler('progress.log')
 file_handler.setFormatter(formatter)
-
 logger.addHandler(file_handler)
-
 
 SIZE = 500
 GRID_LEN = 4
@@ -50,7 +47,8 @@ KEY_CHOICES = (KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT)
 
 class GameGrid(Frame):
     def __init__(self, replay_memory, policy, target, optimizer,
-                 epsilon=1.0, min_epsilon=0.2, eps_decay_rate=1e-6, update_every=40, n_train=3000,
+                 epsilon=1.0, min_epsilon=0.2, eps_decay_rate=1e-4,
+                 update_every=40, n_train=4000,
                  batch_size=1024, gamma=0.999):
         Frame.__init__(self)
 
@@ -170,7 +168,6 @@ class GameGrid(Frame):
         epsilon = self.epsilon
 
         for i_episode in range(self.n_train + 1):
-            # max_reward = 0.0
 
             for t in count(1):
                 epsilon = adjust_epsilon(epsilon)
@@ -179,8 +176,6 @@ class GameGrid(Frame):
                 state = get_state(self.matrix)
                 action = epsilon_greedy_action(state, epsilon)
                 done, reward_ = self.key_down(KEY_CHOICES[action])
-
-                # max_reward += reward_
 
                 reward = adjust_reward(reward_)
                 action = torch.tensor([action], device=device, dtype=torch.long)
@@ -221,6 +216,3 @@ class GameGrid(Frame):
                 max_all = 0.0
 
         self.quit()
-
-
-
