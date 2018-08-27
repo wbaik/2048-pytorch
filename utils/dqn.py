@@ -12,10 +12,10 @@ class DQN(nn.Module):
     def __init__(self, n_action_space):
         super(DQN, self).__init__()
         self.s1 = nn.Sequential(
-            nn.Conv2d(1, 32, (1,1)),
-            nn.BatchNorm2d(32),
+            nn.Conv2d(1, 64, (1,1)),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(32, 128, (2,2)),
+            nn.Conv2d(64, 128, (2,2)),
             nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.Conv2d(128, 128, (2,2)),
