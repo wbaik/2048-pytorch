@@ -13,12 +13,12 @@ It supports both [DQN](https://arxiv.org/abs/1312.5602) and [Double DQN](https:/
 and I am using a version of [gym](https://github.com/mllobet/gym-2048).
 
 ### How to use this...
-One could rely on pure `explorations`, but in this case, the `optimal moves` are,
-probabilistically speaking, not observed often enough. Therefore, use generated data,
-which teaches the network to learn from a better moves. Those generated data comes from
+One could rely on pure `explorations`, but `optimal moves` are
+probabilistically speaking not observed often enough. Therefore, use generated data,
+which teach the network to learn from better moves. Those generated data come from
 the discussion [here](https://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048)
 
-To generate the data, run the following:
+To generate data, run the following:
 
     $ python3 generate_replay_memory.py
 

@@ -51,7 +51,7 @@ class Play2048:
             max_all = max(max_reward, max_all)
             logger.info('---------------------')
             logger.info('Episode no.:{}'.format(i_episode))
-            logger.info('Game over, num_steps: {}, max_reward: {}'.format(t, max_reward))
+            logger.info('Game over, num_steps: {}, max_reward: {}, epsilon: {:.5f}'.format(t, max_reward, epsilon))
             return max_all, max_reward_avg
 
         if mode != 'train':
@@ -72,8 +72,7 @@ class Play2048:
                 action = epsilon_greedy_action(state, epsilon)
                 next_state, reward, done, info = self.env.step(action)
 
-                if t % 100 == 0:
-                    self.replay_memory.push(state, action, next_state, reward)
+                self.replay_memory.push(state, action, next_state, reward)
 
                 if mode == 'train':
                     train_dqn(self.policy, self.target, self.replay_memory,
