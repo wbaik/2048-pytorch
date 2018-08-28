@@ -1,7 +1,9 @@
 import argparse
+import gym
+import gym_2048
+import pickle
 
-import puzzle
-from puzzle import GameGrid
+from play_2048 import Play2048
 
 import torch
 import torch.optim as optim
@@ -11,14 +13,16 @@ from utils import device, ReplayMemory
 
 
 parser = argparse.ArgumentParser(description='Hyper-parameters for the DQN training')
-parser.add_argument('--epsilon', default=1.0, type=float)
-parser.add_argument('--min_epsilon', default=0.2, type=float)
-parser.add_argument('--eps_decay_rate', default=1e-4, type=float)
-parser.add_argument('--update_every', default=40, type=int)
-parser.add_argument('--n_train', default=5000, type=int)
-parser.add_argument('--batch_size', default=2*1024, type=int)
-parser.add_argument('--gamma', default=0.999, type=float)
-parser.add_argument('--replay_memory_length', default=40960, type=int)
+parser.add_argument('--epsilon',              default=1.0, type=float)
+parser.add_argument('--min_epsilon',          default=0.05, type=float)
+parser.add_argument('--eps_decay_rate',       default=1e-5, type=float)
+parser.add_argument('--update_every',         default=500, type=int)
+parser.add_argument('--n_train',              default=100000, type=int)
+parser.add_argument('--batch_size',           default=6, type=int)
+parser.add_argument('--gamma',                default=0.99, type=float)
+parser.add_argument('--replay_memory_length', default=1000000, type=int)
+parser.add_argument('--mode',                 default='train', type=str)
+
 
 args = parser.parse_args()
 
@@ -29,17 +33,24 @@ if __name__ == '__main__':
     try:
         policy.load_state_dict(torch.load('my_policy.pt'))
         target.load_state_dict(torch.load('my_target.pt'))
-    except:
-        print('Exception Raised: Files not found...')
-
-    rm = ReplayMemory(args.replay_memory_length)
-    optimizer = optim.RMSprop(policy.parameters(), eps=1e-5)
+    except FileNotFoundError:
+        print('--- Exception Raised: Files not found...')
 
     try:
-        gamegrid = GameGrid(rm, policy, target, optimizer,
-                            args.epsilon, args.min_epsilon, args.eps_decay_rate,
-                            args.update_every, args.n_train,
-                            args.batch_size, args.gamma)
+        rm = pickle.load(open('replay_memory.p', 'rb'))
+    except FileNotFoundError:
+        rm = ReplayMemory(args.replay_memory_length)
+
+    optimizer = optim.RMSprop(policy.parameters(), eps=1e-5)
+
+    env = gym.make('game-2048-v0')
+    player = Play2048(env, rm, policy, target, optimizer,
+                      args.batch_size, args.epsilon,
+                      args.eps_decay_rate, args.min_epsilon,
+                      args.n_train, args.update_every, args.gamma)
+
+    try:
+        player.play_2048(args.mode)
     except KeyboardInterrupt:
         print('\nKeyboard Interrupt!!!')
         try:

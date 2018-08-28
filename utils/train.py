@@ -7,16 +7,8 @@ from utils.replay_memory import Transition
 from utils.environment import device
 
 
-def train_dqn(policy, target, replay_memory, batch_size, optimizer, gamma):
-    '''
-    :param policy:
-    :param target:
-    :param replay_memory:
-    :param batch_size:
-    :param optimizer:
-    :param gamma:
-    :return:
-    '''
+def train_dqn(policy_q, target_q, replay_memory, batch_size,
+              optimizer, gamma, double_dqn):
 
     def load_game_from_replay_memory():
         transitions = replay_memory.sample(batch_size)
@@ -39,8 +31,15 @@ def train_dqn(policy, target, replay_memory, batch_size, optimizer, gamma):
     reward_batch = batch_to_tensor(batch.reward)
     next_state_batch = batch_to_tensor(batch.next_state, True)
 
-    state_action_values = policy(state_batch).gather(1, action_batch)
-    next_state_values = target(next_state_batch).max(1)[0].detach().unsqueeze(1)
+    state_action_values = policy_q(state_batch).gather(1, action_batch)
+
+    if double_dqn:
+        next_state_action = policy_q(next_state_batch).detach().max(1)[1].unsqueeze(1)
+        next_state_values_action_unspecified = target_q(next_state_batch).detach()
+        next_state_values = next_state_values_action_unspecified.gather(1, next_state_action)
+
+    else:
+        next_state_values = target_q(next_state_batch).max(1)[0].detach().unsqueeze(1)
 
     expected_state_action_values = next_state_values * gamma + reward_batch
 
@@ -48,7 +47,7 @@ def train_dqn(policy, target, replay_memory, batch_size, optimizer, gamma):
 
     optimizer.zero_grad()
     loss.backward()
-    for param in policy.parameters():
+    for param in policy_q.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
