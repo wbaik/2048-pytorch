@@ -31,7 +31,7 @@ To start the training, run the following:
 
 #### Result
 
-##### Without the training data:
+##### Without training data:
 After some training (of more than 6 hours with NVIDIA 1060), 
 I have seen its performance getting better than complete random moves, on average.
 However, the idea of `Q-learning` assumes that its search spaces will be visited,
@@ -48,6 +48,10 @@ But this is not applicable to other games.
 Another solution is to have a ridiculous amount of training hours... And hope it sees the
 value in the corners.
 
-##### With the training data:
-Looks like much more promising than earlier, but still not too satisfactory. I am not sure if
-the model has enough parameters or too many. `git stash`ing for the time being.
+##### With training data:
+An unexpected result was found. `DQN` figured out some flaws in the `env` of `gym_2048` module.
+`DQN` is able to increase the score by somehow taking large number of steps while avoiding the end
+state. This does not really increase the score we see, but increases `DQN`'s score.
+I have hand tested the `gym_2048` as they are from [here](https://github.com/mllobet/gym-2048), and am
+unable to find the flaw, so `git stash`ing for the time being.
+
