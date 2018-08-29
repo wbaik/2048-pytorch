@@ -36,19 +36,17 @@ class Play2048:
     def play_2048(self, mode='train'):
 
         def epsilon_greedy_action(state, epsilon, action_space=4):
+            def get_best_possible_action():
+                actions_available = self.env.moves_available()
+                for pred_action in self.policy.predict(state)[1].tolist()[0]:
+                    if actions_available[pred_action]:
+                        return pred_action
+
             random_prob = np.random.rand()
             state = np.clip(np.log2(state) / 10, 0, 15)[np.newaxis, np.newaxis, ...].tolist()
             state = torch.tensor(state, device=device)
 
-            # This is so messy...
-            action_to_take = -1
-            actions_available = self.env.moves_available()
-            for pred_action in self.policy.predict(state)[1].tolist()[0]:
-                if actions_available[pred_action]:
-                    action_to_take = pred_action
-                    break
-
-            return choice(range(action_space)) if random_prob < epsilon else action_to_take
+            return choice(range(action_space)) if random_prob < epsilon else get_best_possible_action()
 
         def adjust_epsilon(epsilon):
             epsilon *= (1 - self.eps_decay_rate)
@@ -81,7 +79,8 @@ class Play2048:
                 action = epsilon_greedy_action(state, epsilon)
                 next_state, reward, done, info = self.env.step(action)
 
-                self.replay_memory.push(state, action, next_state, reward)
+                if t % 100 == 0:
+                    self.replay_memory.push(state, action, next_state, reward)
 
                 if mode == 'train':
                     train_dqn(self.policy, self.target, self.replay_memory,
@@ -92,7 +91,6 @@ class Play2048:
                                                           max_all,
                                                           max_reward_avg,
                                                           i_episode)
-                    print('--- Game Over: Rendering...')
                     self.env.render('human')
                     break
 

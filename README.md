@@ -13,9 +13,9 @@ It supports both [DQN](https://arxiv.org/abs/1312.5602) and [Double DQN](https:/
 and I am using a version of [gym](https://github.com/mllobet/gym-2048).
 
 ### How to use this...
-One could rely on pure `explorations`, but `optimal moves` are
-probabilistically speaking not observed often enough. Therefore, use generated data,
-which teach the network to learn from better moves. Those generated data come from
+One could rely on pure `explorations`, but `optimal moves` in `2048` are
+`probabilistically speaking` not observed often enough, if played randomly. Therefore, use generated data,
+which teach the `Q network` for better moves. Those generated data come from
 the discussion [here](https://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048)
 
 To generate data, run the following:
@@ -33,20 +33,20 @@ To start the training, run the following:
 
 ##### Without training data:
 After some training (of more than 6 hours with NVIDIA 1060), 
-I have seen its performance getting better than complete random moves, on average.
-However, the idea of `Q-learning` assumes that its search spaces will be visited,
-like in the case of `Monte Carlo Search`, for a number of times to revise its Q-Values.
+I have seen its performance getting not much better than complete random moves.
 
 The current model has a weakness. The original scoring system in the game 
-makes the agent unable to learn the essence of optimal move. Double DQN of course does not
-help in this case. With the original scoring system of 2048,
-it does not (probabilistically speaking) see the value in `corners`; this will only make
+makes the agent unable to learn the essence of an `optimal move`. With the
+original scoring system of 2048, it does not (probabilistically speaking)
+see the value in `corners`; this will only make
 sense to those who knows how to play 2048 well.
  
 A solution to make the training go faster is to change the score system for the agent.
 But this is not applicable to other games.
 Another solution is to have a ridiculous amount of training hours... And hope it sees the
-value in the corners.
+value in `corners`.
+
+My final solution was to use `generated data` which has examples of reasonable moves.
 
 ##### With training data:
 
