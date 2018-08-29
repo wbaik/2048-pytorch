@@ -68,12 +68,10 @@ class Play2048:
                                                                  max_reward_avg / self.update_every))
             logger.info('Max Tile Found             : {}'.format(max_all))
 
-
         if mode != 'train':
             self.epsilon = self.min_epsilon = 0.0001
 
         epsilon = self.epsilon
-
         max_reward_avg, max_all = 0.0, 0.0
 
         for i_episode in range(1, self.n_train + 1):
