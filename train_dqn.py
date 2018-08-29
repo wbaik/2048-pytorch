@@ -55,8 +55,9 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('\nKeyboard Interrupt!!!')
         try:
-            print('Saving...')
-            torch.save(policy.state_dict(), 'my_policy.pt')
-            torch.save(target.state_dict(), 'my_target.pt')
+            if args.mode == 'train':
+                print('Saving...')
+                torch.save(policy.state_dict(), 'my_policy.pt')
+                torch.save(target.state_dict(), 'my_target.pt')
         except Exception as e:
             print('Error :{}'.format(e))

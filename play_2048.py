@@ -34,12 +34,21 @@ class Play2048:
         self.double_dqn = double_dqn
 
     def play_2048(self, mode='train'):
+
         def epsilon_greedy_action(state, epsilon, action_space=4):
             random_prob = np.random.rand()
             state = np.clip(np.log2(state) / 10, 0, 15)[np.newaxis, np.newaxis, ...].tolist()
             state = torch.tensor(state, device=device)
-            return choice(range(action_space)) if random_prob < epsilon \
-                else self.policy.predict(state)[1].item()
+
+            # This is so messy...
+            action_to_take = -1
+            actions_available = self.env.moves_available()
+            for pred_action in self.policy.predict(state)[1].tolist()[0]:
+                if actions_available[pred_action]:
+                    action_to_take = pred_action
+                    break
+
+            return choice(range(action_space)) if random_prob < epsilon else action_to_take
 
         def adjust_epsilon(epsilon):
             epsilon *= (1 - self.eps_decay_rate)

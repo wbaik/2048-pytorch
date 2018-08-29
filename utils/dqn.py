@@ -32,15 +32,4 @@ class DQN(nn.Module):
         return self.act(x)
 
     def predict(self, x):
-        '''
-        :param x: input
-        :return: max_value, index of Q[s,a]
-
-        example
-        -------
-        >>> one_by_three = torch.randint(0,10,(1,3))
-        tensor([[4, 2, 3]])
-        >>> value, index = one_by_three.max(1)
-        tensor[4.], tensor[0]
-        '''
-        return self.forward(x).max(1)
+        return self.forward(x).detach().sort(dim=1, descending=True)
