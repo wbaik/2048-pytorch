@@ -1,28 +1,21 @@
+import itertools
 import numpy as np
 from utils.merge_game import *
 from utils.logic import *
-import itertools
 
 
-# Originally from
-# https://github.com/vpn1997/2048-Ai/blob/master/direct.py
-# With modifications... Some logic seems off...
+# Originally from https://github.com/vpn1997/2048-Ai/blob/master/direct.py
+# With modifications... logic seems off...
 def direction(matrix):
 
     MAX_TILE = np.max(matrix)
-    MAX_DEPTH = 3 if MAX_TILE < 1024 else 4 if MAX_TILE < 2048 else 5
+    MAX_DEPTH = 4 if MAX_TILE < 2048 else 5
+    NUMBER_OF_NONZERO_TILES = np.nonzero(matrix)[0].size
 
     def search(matrix, depth, move=False):
-        # if on leave node return the score or if the game is over
-        l = game_state(matrix)
 
-        if l == 'win' or l == 'lose':
-            l = 1
-        else:
-            l = 0
-
-        if depth == 0 or (move and l):
-            return heuristic(matrix)
+        if MAX_TILE >= 1024 and NUMBER_OF_NONZERO_TILES > 18:
+            return 0
 
         alpha = heuristic(matrix)
 
@@ -45,21 +38,21 @@ def direction(matrix):
 
     def heuristic(matrix):
         def score(matrix):
+            sco = 0
             weight=[[pow(4,6),pow(4,5),pow(4,4),pow(4,3)],
                     [pow(4,5),pow(4,4),pow(4,3),pow(4,2)],
                     [pow(4,4),pow(4,3),pow(4,2),pow(4,1)],
                     [pow(4,3),pow(4,2),pow(4,1),pow(4,0)]]
-            sco=0
+
+            # This is really stupid too...
             for i in range(0,4):
                 for j in range(0,4):
-
-                    sco=sco+int(weight[i][j])*int(matrix[i][j])
+                    sco = sco+int(weight[i][j])*int(matrix[i][j])
             return sco
 
         def penalty(matrix):
 
-            pen=0
-            li=[-1,1]
+            pen = 0
             for i in range(0,4):
                 for j in range(0,4):
                     if (i - 1 >= 0):
@@ -71,18 +64,10 @@ def direction(matrix):
                     if (j + 1 < 4):
                         pen += abs(matrix[i][j] - matrix[i][j + 1])
 
-            pen2=0  #for not empty tiles
+            return pen + NUMBER_OF_NONZERO_TILES
 
-            # This is a stupid way of doing nonzeros...
-            # Plus, I think it's the inverse...
-            for i in range(0,4):
-                for j in range(0,4):
-                    if(matrix[i][j]):
-                        pen2 += 1
-
-            # This is not correct... Doesn't make sense...
-            pen2 = 2*pen2 if MAX_TILE < 1024 else -80*pen2
-            return pen-pen2
+        if MAX_TILE >= 1024 and NUMBER_OF_NONZERO_TILES > 18:
+            return 0
 
         return score(matrix)-penalty(matrix)
 
@@ -96,5 +81,6 @@ def direction(matrix):
     # This is quite arbitrary but to avoid error..
     if len(results) == 0:
         return 'left'
+
     return max(results, key = lambda x: x[1])[0]
 
