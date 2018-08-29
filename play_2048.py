@@ -61,13 +61,20 @@ class Play2048:
             logger.info('Game over, num_steps: {}, max_reward: {}, epsilon: {:.5f}'.format(t, max_reward, epsilon))
             return max_all, max_reward_avg
 
+        def log_on_update_weights(i_episode, epsilon):
+            logger.info('---------------------')
+            logger.info('Ending {} episodes, epsilon: {:.5f}'.format(i_episode, epsilon))
+            logger.info('Max Tile Avg in {}th update: {}'.format(int(i_episode / self.update_every),
+                                                                 max_reward_avg / self.update_every))
+            logger.info('Max Tile Found             : {}'.format(max_all))
+
+
         if mode != 'train':
-            self.epsilon = self.min_epsilon = 0.01
+            self.epsilon = self.min_epsilon = 0.0001
 
         epsilon = self.epsilon
 
-        max_all = 0.0
-        max_reward_avg = 0.0
+        max_reward_avg, max_all = 0.0, 0.0
 
         for i_episode in range(1, self.n_train + 1):
 
@@ -87,19 +94,11 @@ class Play2048:
                               self.batch_size, self.optimizer, self.gamma, self.double_dqn)
 
                 if done:
-                    max_all, max_reward_avg = log_rewards(next_state,
-                                                          max_all,
-                                                          max_reward_avg,
-                                                          i_episode)
                     self.env.render('human')
+                    max_all, max_reward_avg = log_rewards(next_state, max_all, max_reward_avg, i_episode)
                     break
 
             if i_episode % self.update_every == 0:
                 self.target.load_state_dict(self.policy.state_dict())
-                logger.info('---------------------')
-                logger.info('Ending {} episodes, epsilon: {:.5f}'.format(i_episode, epsilon))
-                logger.info('Max Tile Avg in {}th update: {}'.format(int(i_episode / self.update_every),
-                                                                     max_reward_avg / self.update_every))
-                logger.info('Max Tile Found             : {}'.format(max_all))
-                max_reward_avg = 0.0
-                max_all = 0.0
+                log_on_update_weights(i_episode, epsilon)
+                max_reward_avg, max_all = 0.0, 0.0

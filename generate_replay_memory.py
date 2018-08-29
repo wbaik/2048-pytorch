@@ -43,12 +43,6 @@ if __name__ == '__main__':
                 this_state_max = np.max(next_state)
 
                 rm.push(state, action, next_state, reward)
-                # To make replay_memory have enough variations...
-                # if this_state_max >= 1024.0:
-                #     rm.push(state, action, next_state, reward)
-                # else:
-                #     if np.random.random() < 0.3:
-                #         rm.push(state, action, next_state, reward)
 
                 if done:
                     print('Current t : {}'.format(t))
