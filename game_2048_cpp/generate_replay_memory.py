@@ -13,7 +13,7 @@ import numpy as np
 from itertools import count
 
 # Enable multithreading?
-MULTITHREAD = True
+MULTITHREAD = False
 
 for suffix in ['so', 'dll', 'dylib']:
     dllfn = 'game_2048_cpp/bin/2048.' + suffix
@@ -26,10 +26,10 @@ else:
     exit()
 
 ailib.init_tables()
-
 ailib.find_best_move.argtypes = [ctypes.c_uint64]
 ailib.score_toplevel_move.argtypes = [ctypes.c_uint64, ctypes.c_int]
 ailib.score_toplevel_move.restype = ctypes.c_float
+
 
 def to_c_board(m):
     board = 0
@@ -61,6 +61,7 @@ def _to_score(c):
 def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
+
 if MULTITHREAD:
     from multiprocessing.pool import ThreadPool
     pool = ThreadPool(4)
@@ -81,34 +82,6 @@ else:
     def find_best_move(m):
         board = to_c_board(m)
         return ailib.find_best_move(board)
-
-def movename(move):
-    return ['up', 'down', 'left', 'right'][move]
-
-def play_game(gamectrl):
-    moveno = 0
-    start = time.time()
-    while 1:
-        state = gamectrl.get_status()
-        if state == 'ended':
-            break
-        elif state == 'won':
-            time.sleep(0.75)
-            gamectrl.continue_game()
-
-        moveno += 1
-        board = gamectrl.get_board()
-        move = find_best_move(board)
-        if move < 0:
-            break
-        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
-        gamectrl.execute_move(move)
-
-    score = gamectrl.get_score()
-    board = gamectrl.get_board()
-    maxval = max(max(row) for row in to_val(board))
-    print("Game over. Final score %d; highest tile %d." % (score, maxval))
-
 
 
 KEY_TO_VAL = {

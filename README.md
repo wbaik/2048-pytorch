@@ -51,5 +51,5 @@ My final solution was to use `generated data` which has examples of reasonable m
 
 ##### With training data:
 `python` version of generating data by `breadth-first-search` is horribly slow... So, I took
-[C++ version](https://github.com/nneonneo/2048-ai) and modified some to suit my need.
+[C++ version](https://github.com/nneonneo/2048-ai) and modified some to suit my needs.
 
