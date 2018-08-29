@@ -49,9 +49,4 @@ Another solution is to have a ridiculous amount of training hours... And hope it
 value in the corners.
 
 ##### With training data:
-An unexpected result was found. `DQN` figured out some flaws in the `env` of `gym_2048` module.
-`DQN` is able to increase the score by somehow taking large number of steps while avoiding the end
-state. This does not really increase the score we see, but increases `DQN`'s score.
-I have hand tested the `gym_2048` as they are from [here](https://github.com/mllobet/gym-2048), and am
-unable to find the flaw, so `git stash`ing for the time being.
 
