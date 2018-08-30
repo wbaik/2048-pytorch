@@ -22,7 +22,11 @@ if __name__ == '__main__':
 
     try:
         for multiplier in range(1, MAX_MULTIPLIER + 1):
-            generate_replay_memory(rm, env, 2048*multiplier, NUM_EPISODE//multiplier)
+            # Reduce the number of episodes when increasing cutoff values
+            generate_replay_memory(rm,
+                                   env,
+                                   1024 * (1 << multiplier),
+                                   NUM_EPISODE // multiplier)
 
     except KeyboardInterrupt:
         print('--- Exiting from Keyboard Interrupt')

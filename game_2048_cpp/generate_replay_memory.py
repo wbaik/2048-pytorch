@@ -112,6 +112,7 @@ def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
 
             next_state, reward, done, info = env.step(action)
 
+            assert np.max(state) >= 2 and np.max(next_state) >= 2
             replay_memory.push(state, action, next_state, reward)
             max_tile = np.max(next_state)
 

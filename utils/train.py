@@ -17,6 +17,7 @@ def train_dqn(policy_q, target_q, replay_memory, batch_size,
 
     def batch_to_tensor(given_batch, need_log2=False, action_batch=False):
         if need_log2:
+            assert np.max(given_batch) >= 2, 'batch_data is weird: {}'.format(given_batch)
             given_batch = np.clip(np.log2(given_batch) / 10, 0, 18).tolist()
 
         dtype = torch.long if action_batch else torch.float32

@@ -1,16 +1,20 @@
 from itertools import count
 import logging
 import numpy as np
+import os
 from random import choice
 import torch
 from utils import device, train_dqn
 
+FILE_NAME = 'training.log'
+
+os.remove(FILE_NAME)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler = logging.FileHandler('training.log')
+file_handler = logging.FileHandler(FILE_NAME)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
