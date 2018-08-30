@@ -8,7 +8,10 @@ from utils import device, train_dqn
 
 FILE_NAME = 'training.log'
 
-os.remove(FILE_NAME)
+try:
+    os.remove(FILE_NAME)
+except FileNotFoundError:
+    print('File Not Found')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -73,7 +76,7 @@ class Play2048:
             logger.info('Max Tile Found             : {}'.format(max_all))
 
         if mode != 'train':
-            self.epsilon = self.min_epsilon = 1e-7
+            self.epsilon = self.min_epsilon = 1e-8
 
         epsilon = self.epsilon
         max_all, max_reward_avg = 0.0, 0.0

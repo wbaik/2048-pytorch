@@ -25,10 +25,6 @@ To start the training, run the following:
     
     $ python3 train_dqn.py
 
-After one hour of training with the generated data:
-
-![screenshot](img/after_1_hour_training.gif)
-
 
 #### Result
 
@@ -46,7 +42,7 @@ But such is not applicable to other games.
 Another solution was to have a ridiculous amount of training hours... And hope `DQN` sees the
 value in `corners`.
 
-tl;dr
+**tl; dr**
 
 `exploration` does not work in this case.
 My final solution was to use `generated data` which has examples of reasonable moves.
@@ -54,4 +50,8 @@ My final solution was to use `generated data` which has examples of reasonable m
 ##### With training data:
 `python` version of generating data by `breadth-first-search` is horribly slow... So, I took
 [C++ version](https://github.com/nneonneo/2048-ai) and modified some to suit my needs.
+
+After one hour of training with generated data:
+
+![screenshot](img/after_1_hour_training.gif)
 

@@ -5,12 +5,28 @@
 
 from __future__ import print_function
 import ctypes
-import time
+import logging
 import os
-import sys
 
 import numpy as np
 from itertools import count
+
+
+FILE_NAME = 'generating.log'
+
+try:
+    os.remove(FILE_NAME)
+except FileNotFoundError:
+    print('File Not Found')
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler = logging.FileHandler(FILE_NAME)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
 
 # Enable multithreading?
 MULTITHREAD = False
@@ -101,7 +117,7 @@ KEY_TO_VAL = {
 
 def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
 
-    for _ in range(number_of_episode):
+    for no_episode in range(number_of_episode):
         state = env.reset()
 
         for t in count(1):
@@ -117,9 +133,9 @@ def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
             max_tile = np.max(next_state)
 
             if max_tile >= cut_off or done or (len(replay_memory) >= replay_memory.max_length):
-                print('Current t : {}'.format(t))
-                env.render('human')
-                print('--- Generating data... Current length of the rm : {}'.format(replay_memory.__len__()))
+                logger.info('---'*8)
+                logger.info('--- Episode: {}, Length of RepMemory: {}, Steps: {}, Cutoff: {}'.format(
+                    no_episode, len(replay_memory), t, cut_off))
                 break
 
             state = next_state

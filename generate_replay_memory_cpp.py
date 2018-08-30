@@ -7,7 +7,7 @@ from game_2048_cpp import generate_replay_memory
 
 MAX_LENGTH = 50000000
 MAX_MULTIPLIER = 4
-NUM_EPISODE = 30
+NUM_EPISODE = 50
 
 if __name__ == '__main__':
     env = gym.make('game-2048-v0')
