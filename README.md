@@ -3,11 +3,11 @@
 Implementing [Deep Q-Network](https://deepmind.com/research/dqn/) with `PyTorch` to solve 2048. 
 It supports both [DQN](https://arxiv.org/abs/1312.5602) and [Double DQN](https://arxiv.org/abs/1509.06461).
 
-#### Requirements
+### Requirements
 `NVIDIA GPU` and `CUDA`, of course...  and `PyTorch`, along with some others in `requirements.txt`
 
 
-#### 2048
+### 2048
 
 [2048](https://github.com/gabrielecirulli/2048) is a popular game by Gabriele Cirulli, 
 and I am using a version of [gym](https://github.com/mllobet/gym-2048).
@@ -26,9 +26,9 @@ To start the training, run the following:
     $ python3 train_dqn.py
 
 
-#### Result
+### Results
 
-##### Without training data:
+#### Without training data:
 After some training (of more than 6 hours with NVIDIA 1060), 
 I did not see much performance gain relative to random moves.
 
@@ -47,7 +47,7 @@ value in `corners`.
 `exploration` does not work in this case.
 My final solution was to use `generated data` which has examples of reasonable moves.
 
-##### With training data:
+#### With training data:
 `python` version of generating data by `breadth-first-search` is horribly slow... So, I took
 [C++ version](https://github.com/nneonneo/2048-ai) and modified some to suit my needs.
 
