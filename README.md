@@ -26,6 +26,7 @@ To start the training, run the following:
     $ python3 train_dqn.py
 
 After one hour of training with the generated data:
+
 ![screenshot](img/after_1_hour_training.gif)
 
 

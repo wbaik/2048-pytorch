@@ -43,7 +43,7 @@ class Play2048:
                         return pred_action
 
             random_prob = np.random.rand()
-            state = np.clip(np.log2(state) / 10, 0, 15)[np.newaxis, np.newaxis, ...].tolist()
+            state = np.clip(np.log2(state) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
             state = torch.tensor(state, device=device)
 
             return choice(range(action_space)) if random_prob < epsilon else get_best_possible_action()
@@ -72,7 +72,7 @@ class Play2048:
             self.epsilon = self.min_epsilon = 1e-7
 
         epsilon = self.epsilon
-        max_reward_avg, max_all = 0.0, 0.0
+        max_all, max_reward_avg = 0.0, 0.0
 
         for i_episode in range(1, self.n_train + 1):
 
@@ -93,10 +93,14 @@ class Play2048:
 
                 if done:
                     self.env.render('human')
-                    max_all, max_reward_avg = log_rewards(next_state, max_all, max_reward_avg, i_episode)
+
+                    if mode == 'train':
+                        max_all, max_reward_avg = log_rewards(
+                            next_state, max_all, max_reward_avg, i_episode)
+
                     break
 
             if i_episode % self.update_every == 0:
                 self.target.load_state_dict(self.policy.state_dict())
                 log_on_update_weights(i_episode, epsilon)
-                max_reward_avg, max_all = 0.0, 0.0
+                max_all, max_reward_avg= 0.0, 0.0

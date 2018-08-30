@@ -5,6 +5,9 @@ import gym_2048
 from utils import ReplayMemory
 from game_2048_cpp import generate_replay_memory
 
+MAX_LENGTH = 50000000
+MAX_MULTIPLIER = 4
+NUM_EPISODE = 30
 
 if __name__ == '__main__':
     env = gym.make('game-2048-v0')
@@ -15,9 +18,13 @@ if __name__ == '__main__':
 
     except (FileNotFoundError, OSError):
         print('--- Pickle file not found: ReplayMemory generated...')
-        rm = ReplayMemory(3000000)
+        rm = ReplayMemory(MAX_LENGTH)
 
-    generate_replay_memory(rm, env, 2048)
+    try:
+        for multiplier in range(1, MAX_MULTIPLIER + 1):
+            generate_replay_memory(rm, env, 2048*multiplier, NUM_EPISODE//multiplier)
 
-    print('--- Saving Replay Memory to pickle')
-    pickle.dump(rm, open('replay_memory.p', 'wb'))
+    except KeyboardInterrupt:
+        print('--- Exiting from Keyboard Interrupt')
+        print('--- Saving Replay Memory to pickle')
+        pickle.dump(rm, open('replay_memory.p', 'wb'))
