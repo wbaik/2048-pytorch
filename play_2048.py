@@ -18,7 +18,7 @@ logger.addHandler(file_handler)
 class Play2048:
     def __init__(self, env, replay_memory, policy, target, optimizer,
                  batch_size=32, epsilon=1.0, eps_decay_rate=1e-5, min_epsilon=0.1,
-                 n_train=1000000, update_every=10000, gamma=0.99, double_dqn=True):
+                 n_train=1000000, update_every=10000, gamma=0.999, double_dqn=True):
         self.env = env
         self.replay_memory = replay_memory
         self.policy = policy
@@ -69,7 +69,7 @@ class Play2048:
             logger.info('Max Tile Found             : {}'.format(max_all))
 
         if mode != 'train':
-            self.epsilon = self.min_epsilon = 0.0001
+            self.epsilon = self.min_epsilon = 1e-7
 
         epsilon = self.epsilon
         max_reward_avg, max_all = 0.0, 0.0

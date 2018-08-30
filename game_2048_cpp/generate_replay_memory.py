@@ -91,7 +91,7 @@ KEY_TO_VAL = {
     3: 1
 }
 
-def generate_replay_memory(replay_memory, env):
+def generate_replay_memory(replay_memory, env, cut_off):
 
     try:
         while len(replay_memory) < replay_memory.max_length:
@@ -108,7 +108,7 @@ def generate_replay_memory(replay_memory, env):
                 replay_memory.push(state, action, next_state, reward)
                 max_tile = np.max(next_state)
 
-                if max_tile >= 8192 or done:
+                if max_tile >= cut_off or done:
                     print('Current t : {}'.format(t))
                     env.render('human')
                     print('--- Generating data... Current length of the rm : {}'.format(replay_memory.__len__()))
