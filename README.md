@@ -1,10 +1,11 @@
 # 2048-PyTorch-DQN
 
 Implementing [Deep Q-Network](https://deepmind.com/research/dqn/) with `PyTorch` to solve 2048. 
-It supports both [DQN](https://arxiv.org/abs/1312.5602) and [Double DQN](https://arxiv.org/abs/1509.06461).
+It supports [DQN](https://arxiv.org/abs/1312.5602), [Double DQN](https://arxiv.org/abs/1509.06461), and 
+[Dueling DQN](https://arxiv.org/abs/1511.06581).
 
 ### Requirements
-`NVIDIA GPU` and `CUDA`, of course...  and `PyTorch`, along with some others in `requirements.txt`
+`NVIDIA GPU` and `CUDA`, of course...  and `PyTorch-0.4`, along with some others in `requirements.txt`
 
 
 ### 2048
