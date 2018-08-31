@@ -1,10 +1,13 @@
 import datetime
 from itertools import count
 import logging
+import matplotlib.pyplot as plt
 import numpy as np
 from random import choice
 import torch
 from utils import device, train_dqn
+import seaborn as sns
+
 
 FILE_NAME = 'training_{}.log'.format(datetime.datetime.now())
 
@@ -34,11 +37,18 @@ class Play2048:
         self.update_every = update_every
         self.gamma = gamma
         self.double_dqn = double_dqn
+        self._plot_max_tiles()
+
+    def _plot_max_tiles(self):
+        self.fig, self.axis = plt.subplots(2, 1)
+        self.max_tiles = []
+        plt.style.use(['ggplot', 'fivethirtyeight'])
+        plt.ion()
 
     def play_2048(self, mode='train'):
 
-        def epsilon_greedy_action(state, epsilon, action_space=4):
-            def get_best_possible_action():
+        def epsilon_greedy_action(state, action_space=4):
+            def best_action():
                 actions_available = self.env.moves_available()
                 for pred_action in self.policy.predict(state)[1].tolist()[0]:
                     if actions_available[pred_action]:
@@ -48,32 +58,39 @@ class Play2048:
             state = np.clip(np.log2(state) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
             state = torch.tensor(state, device=device)
 
-            return choice(range(action_space)) if np.random.rand() < epsilon else get_best_possible_action()
+            return choice(range(action_space)) if np.random.rand() < self.epsilon else best_action()
 
-        def adjust_epsilon(epsilon):
-            epsilon *= (1 - self.eps_decay_rate)
-            return max(epsilon, self.min_epsilon)
+        def adjust_epsilon():
+            self.epsilon *= (1 - self.eps_decay_rate)
+            self.epsilon = max(self.epsilon, self.min_epsilon)
 
-        def log_rewards(next_state, max_all, max_reward_avg, i_episode):
+        def log_rewards(next_state, max_all, max_reward_avg):
             max_reward = np.max(next_state)
             max_reward_avg += max_reward
             max_all = max(max_reward, max_all)
-            logger.info('---------------------')
-            logger.info('Episode no.:{}'.format(i_episode))
-            logger.info('Game over, num_steps: {}, max_reward: {}, epsilon: {:.5f}'.format(t, max_reward, epsilon))
+
+            if mode == 'train':
+                logger.info('---------------------')
+                logger.info('Episode no.:{}'.format(i_episode))
+                logger.info('Game over, num_steps: {}, max_reward: {}, epsilon: {:.5f}'.format(t, max_reward, self.epsilon))
+
+            self.max_tiles += [max_reward.item()]
+            self.axis[0].scatter(len(self.max_tiles), self.max_tiles[-1])
+            plt.pause(0.001)
+
             return max_all, max_reward_avg
 
-        def log_on_update_weights(i_episode, epsilon):
+        def log_on_update_weights():
             logger.info('---------------------')
-            logger.info('Ending {} episodes, epsilon: {:.5f}'.format(i_episode, epsilon))
+            logger.info('Ending {} episodes, epsilon: {:.5f}'.format(i_episode, self.epsilon))
             logger.info('Max Tile Avg in {}th update: {}'.format(i_episode // self.update_every,
                                                                  max_reward_avg / self.update_every))
             logger.info('Max Tile Found             : {}'.format(max_all))
+            sns.distplot(self.max_tiles, ax=self.axis[1])
 
         if mode != 'train':
             self.epsilon = self.min_epsilon = 1e-8
 
-        epsilon = self.epsilon
         max_all, max_reward_avg = 0.0, 0.0
 
         for i_episode in range(1, self.n_train + 1):
@@ -82,8 +99,8 @@ class Play2048:
 
             for t in count(1):
 
-                epsilon = adjust_epsilon(epsilon)
-                action = epsilon_greedy_action(state, epsilon)
+                adjust_epsilon()
+                action = epsilon_greedy_action(state)
                 next_state, reward, done, info = self.env.step(action)
 
                 if t % 100 == 0:
@@ -95,14 +112,10 @@ class Play2048:
 
                 if done:
                     self.env.render('human')
-
-                    if mode == 'train':
-                        max_all, max_reward_avg = log_rewards(
-                            next_state, max_all, max_reward_avg, i_episode)
-
+                    max_all, max_reward_avg = log_rewards(next_state, max_all, max_reward_avg)
                     break
 
             if i_episode % self.update_every == 0:
                 self.target.load_state_dict(self.policy.state_dict())
-                log_on_update_weights(i_episode, epsilon)
-                max_all, max_reward_avg= 0.0, 0.0
+                log_on_update_weights()
+                max_all, max_reward_avg = 0.0, 0.0

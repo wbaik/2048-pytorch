@@ -6,8 +6,8 @@ from utils import ReplayMemory
 from game_2048_cpp import generate_replay_memory
 
 MAX_LENGTH = 50000000
-MAX_MULTIPLIER = 4
-NUM_EPISODE = 50
+MAX_MULTIPLIER = 5
+NUM_EPISODE = 1000
 
 if __name__ == '__main__':
     env = gym.make('game-2048-v0')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             # Reduce the number of episodes when increasing cutoff values
             generate_replay_memory(rm,
                                    env,
-                                   1024 * (1 << multiplier),
+                                   256 * (1 << multiplier),
                                    NUM_EPISODE // multiplier)
 
     except KeyboardInterrupt:

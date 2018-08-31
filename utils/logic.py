@@ -1,4 +1,4 @@
-from random import *
+import random
 
 # [Marking Scheme]
 # Points to note:
@@ -18,11 +18,11 @@ def new_game(n):
 # 1 mark for creating the correct loop
 
 def add_two(mat):
-    a=randint(0,len(mat)-1)
-    b=randint(0,len(mat)-1)
+    a=random.randint(0,len(mat)-1)
+    b=random.randint(0,len(mat)-1)
     while(mat[a][b]!=0):
-        a=randint(0,len(mat)-1)
-        b=randint(0,len(mat)-1)
+        a=random.randint(0,len(mat)-1)
+        b=random.randint(0,len(mat)-1)
     mat[a][b]=2
     return mat
 

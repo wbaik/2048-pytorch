@@ -11,6 +11,7 @@ import os
 
 import numpy as np
 from itertools import count
+from utils import direction
 
 
 FILE_NAME = 'generating.log'
@@ -115,28 +116,54 @@ KEY_TO_VAL = {
     3: 1
 }
 
+KEY_TO_VAL_STR = {
+    'left':     3,
+    'right':    1,
+    'up':       0,
+    'down':     2
+}
 
+HARD_PUKE = 20
 def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
+
+    def get_action(t, state):
+        if t < HARD_PUKE:
+            key = direction(state)
+            action = KEY_TO_VAL_STR[key]
+        else:
+            log2_state = np.clip(np.log2(state), 0.0, 18.0).tolist()
+            move = find_best_move(log2_state)
+            action = KEY_TO_VAL[move]
+        return action
+
+    def not_top_left(t):
+        if t < HARD_PUKE:
+            return False
+        np_state = np.array(state)
+        top_left = np.max(np_state[:2, :2]).item()
+        top_right = np.max(np_state[:2, 2:]).item()
+        bot_left = np.max(np_state[2:, :2]).item()
+        bot_right = np.max(np_state[2:, 2:]).item()
+        max_all = np.max([top_left, top_right, bot_left, bot_right]).item()
+        return max_all > top_left
 
     for no_episode in range(number_of_episode):
         state = env.reset()
 
         for t in count(1):
 
-            log2_state = np.clip(np.log2(state), 0.0, 18.0).tolist()
-            move = find_best_move(log2_state)
-            action = KEY_TO_VAL[move]
-
+            action = get_action(t, state)
             next_state, reward, done, info = env.step(action)
 
             assert np.max(state) >= 2 and np.max(next_state) >= 2
             replay_memory.push(state, action, next_state, reward)
             max_tile = np.max(next_state)
 
-            if max_tile >= cut_off or done or (len(replay_memory) >= replay_memory.max_length):
+            if max_tile >= cut_off or done or (len(replay_memory) >= replay_memory.max_length) or not_top_left(t):
                 logger.info('---'*8)
                 logger.info('--- Episode: {}, Length of RepMemory: {}, Steps: {}, Cutoff: {}'.format(
                     no_episode, len(replay_memory), t, cut_off))
+                env.render('human')
                 break
 
             state = next_state

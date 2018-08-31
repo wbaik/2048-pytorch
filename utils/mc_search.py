@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
 from utils.merge_game import *
-from utils.logic import *
+from utils.logic import game_state
 
 
 # Originally from https://github.com/vpn1997/2048-Ai/blob/master/direct.py
@@ -9,13 +9,21 @@ from utils.logic import *
 def direction(matrix):
 
     MAX_TILE = np.max(matrix)
-    MAX_DEPTH = 4 if MAX_TILE < 2048 else 5
+    MAX_DEPTH = 3 if MAX_TILE < 1024 else 4 if MAX_TILE < 2048 else 5
     NUMBER_OF_NONZERO_TILES = np.nonzero(matrix)[0].size
 
+    # This looks horrible but ...
     def search(matrix, depth, move=False):
+        # if on leave node return the score or if the game is over
+        l = game_state(matrix)
 
-        if MAX_TILE >= 1024 and NUMBER_OF_NONZERO_TILES > 18:
-            return 0
+        if l == 'win' or l == 'lose':
+            l = 1
+        else:
+            l = 0
+
+        if depth == 0 or (move and l):
+            return heuristic(matrix)
 
         alpha = heuristic(matrix)
 
@@ -65,9 +73,6 @@ def direction(matrix):
                         pen += abs(matrix[i][j] - matrix[i][j + 1])
 
             return pen + NUMBER_OF_NONZERO_TILES
-
-        if MAX_TILE >= 1024 and NUMBER_OF_NONZERO_TILES > 18:
-            return 0
 
         return score(matrix)-penalty(matrix)
 
