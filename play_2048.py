@@ -1,17 +1,12 @@
+import datetime
 from itertools import count
 import logging
 import numpy as np
-import os
 from random import choice
 import torch
 from utils import device, train_dqn
 
-FILE_NAME = 'training.log'
-
-try:
-    os.remove(FILE_NAME)
-except FileNotFoundError:
-    print('File Not Found')
+FILE_NAME = 'training_{}.log'.format(datetime.datetime.now())
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

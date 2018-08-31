@@ -399,8 +399,8 @@ float score_toplevel_move(board_t board, int move) {
     elapsed = (finish.tv_sec - start.tv_sec);
     elapsed += (finish.tv_usec - start.tv_usec) / 1000000.0;
 
-    printf("Move %d: result %f: eval'd %ld moves (%d cache hits, %d cache size) in %.2f seconds (maxdepth=%d)\n", move, res,
-        state.moves_evaled, state.cachehits, (int)state.trans_table.size(), elapsed, state.maxdepth);
+//    printf("Move %d: result %f: eval'd %ld moves (%d cache hits, %d cache size) in %.2f seconds (maxdepth=%d)\n", move, res,
+//        state.moves_evaled, state.cachehits, (int)state.trans_table.size(), elapsed, state.maxdepth);
 
     return res;
 }
@@ -410,10 +410,6 @@ int find_best_move(board_t board) {
     int move;
     float best = 0;
     int bestmove = -1;
-
-    printf("--- Original board\n");
-    print_board(board);
-    printf("Current scores: heur %.0f, actual %.0f\n", score_heur_board(board), score_board(board));
 
     for(move=0; move<4; move++) {
         float res = score_toplevel_move(board, move);
@@ -425,9 +421,7 @@ int find_best_move(board_t board) {
     }
 
     board_t newboard = execute_move(bestmove, board);
-    printf("--- New board\n");
-    print_board(newboard);
-    printf("--- ---------\n");
+
     return bestmove;
 }
 

@@ -1,4 +1,4 @@
-from utils.dqn import DQN
+from utils.dqn import DQN, DuelingDQN, XceptionLikeDuelingDQN
 from utils.environment import device
 from utils.mc_search import direction
 from utils.replay_memory import ReplayMemory, Transition
