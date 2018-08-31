@@ -135,7 +135,7 @@ class Engine:
 
                             reward += val*2
                             self.score += reward
-                            self.won = (reward >= 4096)
+                            self.won = (reward >= 2048*8)
                             moved = True
                         # move
                         elif self.board[n_row][n_col] == 0:
@@ -153,7 +153,7 @@ class Engine:
         if self.ended and not self.won:
             logged_reward = -3.0
         else:
-            logged_reward = np.clip(np.log2(reward), 0, 15) / 11.0 # log2(1024) == 10, 15 totally aribtrary
+            logged_reward = np.clip(np.log2(reward), 0, 18) / 11.0 # log2(1024) == 10, 18 totally aribtrary
 
         return logged_reward, self.ended
 

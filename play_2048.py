@@ -16,7 +16,7 @@ except FileNotFoundError:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler = logging.FileHandler(FILE_NAME)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -49,11 +49,11 @@ class Play2048:
                     if actions_available[pred_action]:
                         return pred_action
 
-            random_prob = np.random.rand()
+            assert np.max(state) >= 2.0
             state = np.clip(np.log2(state) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
             state = torch.tensor(state, device=device)
 
-            return choice(range(action_space)) if random_prob < epsilon else get_best_possible_action()
+            return choice(range(action_space)) if np.random.rand() < epsilon else get_best_possible_action()
 
         def adjust_epsilon(epsilon):
             epsilon *= (1 - self.eps_decay_rate)
@@ -71,7 +71,7 @@ class Play2048:
         def log_on_update_weights(i_episode, epsilon):
             logger.info('---------------------')
             logger.info('Ending {} episodes, epsilon: {:.5f}'.format(i_episode, epsilon))
-            logger.info('Max Tile Avg in {}th update: {}'.format(int(i_episode / self.update_every),
+            logger.info('Max Tile Avg in {}th update: {}'.format(i_episode // self.update_every,
                                                                  max_reward_avg / self.update_every))
             logger.info('Max Tile Found             : {}'.format(max_all))
 

@@ -6,6 +6,7 @@
 from __future__ import print_function
 import ctypes
 import logging
+import pickle
 import os
 
 import numpy as np
@@ -140,3 +141,5 @@ def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
 
             state = next_state
 
+        if no_episode % (number_of_episode // 10) == 0:
+            pickle.dump(replay_memory, open('replay_memory.p', 'wb'))
