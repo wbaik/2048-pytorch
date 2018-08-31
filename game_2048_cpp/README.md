@@ -1,7 +1,7 @@
 ## Generating Replay Memory
 
 Most of the code is from [here](https://github.com/nneonneo/2048-ai). Because `python` is slower than `c++` in 
-doing this kind of work, I revised some of the codes from the repository to suite my needs. 
+doing this kind of work, I revised some of the codes from the repository to suit my needs. 
 It now runs on the `gym-2048`.
 
 ### https://github.com/nneonneo/2048-ai:
