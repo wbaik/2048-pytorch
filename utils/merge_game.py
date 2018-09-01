@@ -53,8 +53,8 @@ def move_exists(b):
 
 
 MERGE_FUNCTIONS = {
-    'left': merge_left,
-    'right': merge_right,
     'up': merge_up,
-    'down': merge_down
+    'right': merge_right,
+    'down': merge_down,
+    'left': merge_left,
 }

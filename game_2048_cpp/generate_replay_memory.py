@@ -145,6 +145,11 @@ def generate_replay_memory(replay_memory, env, cut_off, number_of_episode):
         bot_left = np.max(np_state[2:, :2]).item()
         bot_right = np.max(np_state[2:, 2:]).item()
         max_all = np.max([top_left, top_right, bot_left, bot_right]).item()
+
+        if (bot_left == max_all and np_state[2, 0] == np_state[3, 0]) or \
+            (top_right == max_all and np_state[0, 2] == np_state[0, 3]):
+            return False
+
         return max_all > top_left
 
     for no_episode in range(number_of_episode):

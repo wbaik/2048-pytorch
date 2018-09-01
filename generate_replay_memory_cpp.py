@@ -22,10 +22,10 @@ if __name__ == '__main__':
 
     try:
         for multiplier in range(1, MAX_MULTIPLIER + 1):
-            # Reduce the number of episodes when increasing cutoff values
+            # Reduces the number of episodes when cutoffs increase
             generate_replay_memory(rm,
                                    env,
-                                   256 * (1 << multiplier),
+                                   2048 * (1 << multiplier),
                                    NUM_EPISODE // multiplier)
 
     except KeyboardInterrupt:

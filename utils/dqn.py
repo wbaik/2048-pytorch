@@ -88,7 +88,11 @@ class XceptionLikeDuelingDQN(nn.Module):
             nn.ReLU(),
             XceptionLike(64),
             Flatten(),
-            nn.Linear(2880, 128),
+            nn.Linear(2880, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
             nn.ReLU(),
         )
 

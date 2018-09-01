@@ -1,11 +1,13 @@
+from copy import deepcopy
 import datetime
 from itertools import count
+from gym_2048.engine import Engine
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from random import choice
 import torch
-from utils import device, train_dqn
+from utils import device, train_dqn, MERGE_FUNCTIONS
 import seaborn as sns
 
 
@@ -48,17 +50,60 @@ class Play2048:
     def play_2048(self, mode='train'):
 
         def epsilon_greedy_action(state, action_space=4):
-            def best_action():
-                actions_available = self.env.moves_available()
-                for pred_action in self.policy.predict(state)[1].tolist()[0]:
-                    if actions_available[pred_action]:
-                        return pred_action
+            '''
+            :param state: list of shape [4, 4]
+            :param action_space: constant 4
+            :return: value of an action in [0...3]
+            '''
+
+            def get_actions_available(given_state):
+                dummy_engine = Engine()
+                dummy_engine.board = given_state
+                return dummy_engine.moves_available()
+
+            def get_tensor_for_predictions(state_original):
+                torch_state = np.clip(np.log2(state_original) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
+                torch_state = torch.tensor(torch_state, device=device)
+                return torch_state
+
+            def best_action(given_state):
+                torch_state = get_tensor_for_predictions(given_state)
+                actions_available = get_actions_available(given_state)
+
+                pred_value, pred_action = self.policy.predict(torch_state)
+                convert_dim_to_one = lambda x: x[0].tolist()
+                pred_value, pred_action = list(map(convert_dim_to_one, [pred_value, pred_action]))
+
+                for value, action in zip(pred_value, pred_action):
+                    if actions_available[action]:
+                        return value, action
+
+            def one_step_look_ahead(original_state):
+                dummy_engine = Engine()
+                dummy_engine.board = original_state
+
+                current_best_value, current_best_action = 0.0, -1
+                actions_available = dummy_engine.moves_available()
+                for idx in range(4):
+                    if actions_available[idx]:
+                        log2_reward, ended = dummy_engine.move(idx)
+                        if not ended:
+                            this_value, this_action = best_action(dummy_engine.board)
+                            this_value += log2_reward
+
+                            if current_best_value < this_value:
+                                current_best_value, current_best_action = this_value, idx
+
+                return current_best_value, current_best_action
 
             assert np.max(state) >= 2.0
-            state = np.clip(np.log2(state) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
-            state = torch.tensor(state, device=device)
 
-            return choice(range(action_space)) if np.random.rand() < self.epsilon else best_action()
+            if mode == 'test' and False: # Ignoring for the time being
+                state_copy = deepcopy(state)
+                action_one_step_ahead = one_step_look_ahead(state_copy)[1]
+                return action_one_step_ahead if action_one_step_ahead != -1 else best_action(state)[1]
+
+            return choice(range(action_space)) if np.random.rand() < self.epsilon else best_action(state)[1]
 
         def adjust_epsilon():
             self.epsilon *= (1 - self.eps_decay_rate)
