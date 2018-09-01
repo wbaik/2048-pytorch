@@ -56,3 +56,10 @@ After one hour of training with generated data, it sees some value in `corners`.
 
 ![screenshot](img/one_hour_training.gif)
 
+After **one hour** training, the distribution of the largest tiles generated is like this:
+
+![one_hour_dist](img/one_hour_distribution.png)
+
+After **two hours** of training:
+
+![two_hours_dist](img/two_hour_distribution.png)
