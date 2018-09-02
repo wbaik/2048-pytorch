@@ -73,12 +73,15 @@ class Play2048:
         return torch_state
 
     @classmethod
+    def log_on_update(cls, _i_episode, _max_reward_avg, _axis, _max_tiles, update_every):
+        sns.distplot(_max_tiles, ax=_axis[1])
+        logger.info('Ending {} episodes'.format(_i_episode))
+        logger.info('Max Tile Avg in {}th update: {}'.format(_i_episode // update_every,
+                                                             _max_reward_avg / update_every))
+
+    @classmethod
     def supervised_model_test(cls, model, n_train, update_every):
 
-        def log_on_update(_i_episode, _max_reward_avg):
-            logger.info('Ending {} episodes'.format(_i_episode))
-            logger.info('Max Tile Avg in {}th update: {}'.format(_i_episode // update_every,
-                                                                 _max_reward_avg / update_every))
 
         env = gym.make('game-2048-v0')
 
@@ -95,16 +98,16 @@ class Play2048:
                 _, action = cls.best_action(state, model)
 
                 next_state, reward, done, info = env.step(action)
-                env.render('human')
 
                 if done:
+                    env.render('human')
                     max_all, max_reward_avg, max_tiles, axis = cls.log_rewards(next_state, max_all,
                                                                                max_reward_avg, t,
                                                                                axis, max_tiles)
                     break
 
             if i_episode % update_every == 0:
-                log_on_update(i_episode, max_reward_avg)
+                cls.log_on_update(i_episode, max_reward_avg, axis, max_tiles, update_every)
                 max_all, max_reward_avg = 0.0, 0.0
 
     @classmethod
