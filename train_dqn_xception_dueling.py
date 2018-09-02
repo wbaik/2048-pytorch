@@ -16,11 +16,11 @@ parser.add_argument('--epsilon',              default=1.0, type=float)
 parser.add_argument('--min_epsilon',          default=0.05, type=float)
 parser.add_argument('--eps_decay_rate',       default=1e-5, type=float)
 parser.add_argument('--update_every',         default=100, type=int)
-parser.add_argument('--n_train',              default=1000, type=int)
-parser.add_argument('--batch_size',           default=1024, type=int)
+parser.add_argument('--n_train',              default=1200, type=int)
+parser.add_argument('--batch_size',           default=512, type=int)
 parser.add_argument('--gamma',                default=0.999, type=float)
 parser.add_argument('--replay_memory_length', default=3000000, type=int)
-parser.add_argument('--learning_rate',        default=8e-6, type=float)
+parser.add_argument('--learning_rate',        default=3e-6, type=float)
 parser.add_argument('--mode',                 default='train', type=str, choices=['train', 'test'])
 parser.add_argument('--replay_memory',        default='replay_memory.p', type=str)
 parser.add_argument('--policy_weights',       default='my_xception_policy.pt', type=str)
@@ -53,8 +53,13 @@ if __name__ == '__main__':
 
     try:
         player.play_2048(args.mode)
+        if args.mode == 'train':
+            print('Saving...')
+            torch.save(policy.state_dict(), args.policy_weights)
+            torch.save(target.state_dict(), args.target_weights)
     except KeyboardInterrupt:
         print('\nKeyboard Interrupt!!!')
+    finally:
         try:
             if args.mode == 'train':
                 print('Saving...')

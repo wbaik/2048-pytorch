@@ -54,6 +54,7 @@ if __name__ == '__main__':
         player.play_2048(args.mode)
     except KeyboardInterrupt:
         print('\nKeyboard Interrupt!!!')
+    finally:
         try:
             if args.mode == 'train':
                 print('Saving...')

@@ -1,11 +1,14 @@
 from copy import deepcopy
 import datetime
 from itertools import count
+import gym
+import gym_2048
 from gym_2048.engine import Engine
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from random import choice
+import time
 import torch
 from utils import device, train_dqn, MERGE_FUNCTIONS
 import seaborn as sns
@@ -39,13 +42,90 @@ class Play2048:
         self.update_every = update_every
         self.gamma = gamma
         self.double_dqn = double_dqn
-        self._plot_max_tiles()
-
-    def _plot_max_tiles(self):
-        self.fig, self.axis = plt.subplots(2, 1)
         self.max_tiles = []
+        self.fig, self.axis = self.get_figure_and_axis()
+
+    @classmethod
+    def get_figure_and_axis(cls):
         plt.style.use(['ggplot', 'fivethirtyeight'])
         plt.ion()
+        return plt.subplots(2, 1)
+
+    @classmethod
+    def log_rewards(cls, next_state, max_all, max_reward_avg, t, axis, max_tiles):
+        max_reward = np.max(next_state)
+        max_reward_avg += max_reward
+        max_all = max(max_reward, max_all)
+
+        logger.info('---------------------')
+        logger.info('num_steps: {}, max_reward: {}'.format(t, max_reward))
+
+        max_tiles += [max_reward.item()]
+        axis[0].scatter(len(max_tiles), max_tiles[-1])
+        plt.pause(0.01)
+
+        return max_all, max_reward_avg, max_tiles, axis
+
+    @classmethod
+    def get_tensor_for_predictions(cls, state_original):
+        torch_state = np.clip(np.log2(state_original) / 10, 0, 18)[np.newaxis, np.newaxis, ...].tolist()
+        torch_state = torch.tensor(torch_state, device=device)
+        return torch_state
+
+    @classmethod
+    def supervised_model_test(cls, model, n_train, update_every):
+
+        def log_on_update(_i_episode, _max_reward_avg):
+            logger.info('Ending {} episodes'.format(_i_episode))
+            logger.info('Max Tile Avg in {}th update: {}'.format(_i_episode // update_every,
+                                                                 _max_reward_avg / update_every))
+
+        env = gym.make('game-2048-v0')
+
+        max_all, max_reward_avg = 0.0, 0.0
+        max_tiles = []
+        _, axis = cls.get_figure_and_axis()
+
+        for i_episode in range(1, n_train + 1):
+
+            state = env.reset()
+
+            for t in count(1):
+
+                _, action = cls.best_action(state, model)
+
+                next_state, reward, done, info = env.step(action)
+                env.render('human')
+
+                if done:
+                    max_all, max_reward_avg, max_tiles, axis = cls.log_rewards(next_state, max_all,
+                                                                               max_reward_avg, t,
+                                                                               axis, max_tiles)
+                    break
+
+            if i_episode % update_every == 0:
+                log_on_update(i_episode, max_reward_avg)
+                max_all, max_reward_avg = 0.0, 0.0
+
+    @classmethod
+    def get_actions_available(cls, given_state):
+        dummy_engine = Engine()
+        dummy_engine.board = given_state
+        return dummy_engine.moves_available()
+
+
+    @classmethod
+    def best_action(cls, given_state, model):
+        torch_state = cls.get_tensor_for_predictions(given_state)
+        actions_available = cls.get_actions_available(given_state)
+
+        pred_value, pred_action = model.predict(torch_state)
+        convert_dim_to_one = lambda x: x[0].tolist()
+        pred_value, pred_action = list(map(convert_dim_to_one, [pred_value, pred_action]))
+
+        for value, action in zip(pred_value, pred_action):
+            if actions_available[action]:
+                return value, action
 
     def play_2048(self, mode='train'):
 
@@ -154,6 +234,9 @@ class Play2048:
                 if mode == 'train':
                     train_dqn(self.policy, self.target, self.replay_memory,
                               self.batch_size, self.optimizer, self.gamma, self.double_dqn)
+                # else:
+                #     self.env.render('human')
+                #     time.sleep(0.05)
 
                 if done:
                     self.env.render('human')

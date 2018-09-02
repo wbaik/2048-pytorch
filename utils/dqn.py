@@ -36,6 +36,71 @@ class DQN(nn.Module):
         return self.forward(x).detach().sort(dim=1, descending=True)
 
 
+class Combine(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size):
+        super(Combine, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size) #, groups=in_channels)
+        self.bn   = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        return self.relu(x)
+
+
+class Concat(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(Concat, self).__init__()
+        self.c1 = Combine(in_channels, out_channels, (2, 1))
+        self.c2 = Combine(in_channels, out_channels, (1, 2))
+
+        self.flat = Flatten()
+
+    def forward(self, x):
+        x1 = self.flat(self.c1(x))
+        x2 = self.flat(self.c2(x))
+
+        return torch.cat([x1, x2], 1)
+
+
+class SupervisedModel(nn.Module):
+
+    def __init__(self, n_action_space):
+        super(SupervisedModel, self).__init__()
+        self.c1 = Combine(1, 256, (2, 1))
+        self.c2 = Combine(1, 256, (1, 2))
+
+        self.concat1 = Concat(256, 1024)
+        self.concat2 = Concat(256, 1024)
+
+        self.l1 = nn.Linear(34816, 4096)
+        self.l2 = nn.Linear(4096, 1024)
+        self.l3 = nn.Linear(1024, 32)
+        self.act = nn.Linear(32, n_action_space)
+
+    def forward(self, x):
+        x1 = self.c1(x)
+        x2 = self.c2(x)
+
+        x1 = self.concat1(x1)
+        x2 = self.concat2(x2)
+
+        x = torch.cat([x1, x2], 1)
+
+        x = F.relu(self.l1(x))
+        x = F.relu(self.l2(x))
+        x = F.relu(self.l3(x))
+
+        return self.act(x)
+
+    def predict(self, x):
+        return self.forward(x).detach().sort(dim=1, descending=True)
+
+    def get_argmax(self, x):
+        return self.forward(x)[0].detach().argmax().item()
+
+
 class DuelingDQN(nn.Module):
 
     def __init__(self, n_action_space):
@@ -83,27 +148,27 @@ class XceptionLikeDuelingDQN(nn.Module):
         super(XceptionLikeDuelingDQN, self).__init__()
 
         self.feature = nn.Sequential(
-            nn.Conv2d(1, 64, (1, 1)),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(1, 1024, (1, 1)),
+            nn.BatchNorm2d(1024),
             nn.ReLU(),
-            XceptionLike(64),
+            XceptionLike(1024),
             Flatten(),
-            nn.Linear(2880, 256),
+            nn.Linear(27648, 2048),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(2048, 2048),
             nn.ReLU(),
-            nn.Linear(256, 128),
+            nn.Linear(2048, 1024),
             nn.ReLU(),
         )
 
         self.value = nn.Sequential(
-            nn.Linear(128, 32),
+            nn.Linear(1024, 32),
             nn.ReLU(),
             nn.Linear(32, 1)
         )
 
         self.advantage = nn.Sequential(
-            nn.Linear(128, 128),
+            nn.Linear(1024, 128),
             nn.ReLU(),
             nn.Linear(128, n_action_space)
         )
@@ -122,10 +187,10 @@ class XceptionLike(nn.Module):
     def __init__(self, in_channels):
         super(XceptionLike, self).__init__()
 
-        self.branch2x2 = BasicConv2d(in_channels, 128, kernel_size=2, groups=in_channels)
-        self.branch3x3 = BasicConv2d(in_channels, 128, kernel_size=3, groups=in_channels, padding=1)
+        self.branch2x2 = BasicConv2d(in_channels, 1024, kernel_size=2, groups=in_channels)
+        self.branch3x3 = BasicConv2d(in_channels, 1024, kernel_size=3, groups=in_channels, padding=1)
         self.maxpool3x3 = nn.MaxPool2d(2, 1)
-        self.branch4x4 = BasicConv2d(in_channels, 64, kernel_size=4, groups=in_channels, padding=1)
+        self.branch4x4 = BasicConv2d(in_channels, 1024, kernel_size=4, groups=in_channels, padding=1)
 
     def forward(self, x):
         branch2x2 = self.branch2x2(x)
