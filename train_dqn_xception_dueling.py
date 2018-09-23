@@ -53,10 +53,6 @@ if __name__ == '__main__':
 
     try:
         player.play_2048(args.mode)
-        if args.mode == 'train':
-            print('Saving...')
-            torch.save(policy.state_dict(), args.policy_weights)
-            torch.save(target.state_dict(), args.target_weights)
     except KeyboardInterrupt:
         print('\nKeyboard Interrupt!!!')
     finally:
