@@ -1,4 +1,4 @@
-# 2048-PyTorch-DQN
+# 2048-PyTorch
 
 Implementing [Deep Q-Network](https://deepmind.com/research/dqn/) with `PyTorch` to solve 2048. 
 It supports [DQN](https://arxiv.org/abs/1312.5602), [Double DQN](https://arxiv.org/abs/1509.06461), and 
